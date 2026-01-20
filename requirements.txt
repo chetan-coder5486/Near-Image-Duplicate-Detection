@@ -5,3 +5,5 @@ tqdm
 opencv-python 
 albumentations 
 pillow
+imagehash
+numpy
