@@ -1,9 +1,6 @@
-# src/sieves.py
-
 from PIL import Image
 import imagehash
 from typing import Dict, List, Tuple
-
 
 def compute_dhash(image: Image.Image, hash_size: int = 8) -> str:
     """
