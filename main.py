@@ -3,22 +3,26 @@ from PIL import Image
 
 from src.sieves import compute_dhash, hamming_distance
 from src.verifier import SSCDVerifier
-from src.config import HASH_HAMMING_THRESHOLD, SSCD_SIM_THRESHOLD
+from src.indexer import Indexer
+from src.config import HASH_HAMMING_THRESHOLD, SSCD_SIM_THRESHOLD, SSCD_MODEL_PATH
+
 
 # -------------------------
 # 1. Build Hash Database
 # -------------------------
 
-HASH_DB = {}  # {image_path: dhash}
+HASH_DB = {}  # {dhash: image_path}
 
 def build_hash_db(image_folder: str):
     print("[INFO] Building Hash Database...")
+    
     for img_name in os.listdir(image_folder):
         img_path = os.path.join(image_folder, img_name)
 
         try:
-            img = Image.open(img_path)
-            HASH_DB[img_path] = compute_dhash(img)
+            img = Image.open(img_path).convert("RGB")
+            dhash = compute_dhash(img)
+            HASH_DB[dhash] = img_path
         except Exception as e:
             print(f"[WARN] Skipping {img_name}: {e}")
 
@@ -32,7 +36,7 @@ def build_hash_db(image_folder: str):
 def check_sieve(query_image: Image.Image):
     q_hash = compute_dhash(query_image)
 
-    for img_path, db_hash in HASH_DB.items():
+    for db_hash, img_path in HASH_DB.items():
         dist = hamming_distance(q_hash, db_hash)
 
         if dist <= HASH_HAMMING_THRESHOLD:
@@ -42,18 +46,23 @@ def check_sieve(query_image: Image.Image):
 
 
 # -------------------------
-# 3. Verifier Stage (SSCD)
+# 3. Verifier Stage (SSCD + FAISS)
 # -------------------------
 
-verifier = SSCDVerifier()
+verifier = SSCDVerifier(SSCD_MODEL_PATH)
+indexer = Indexer()
 
-def check_verifier(query_image: Image.Image):
-    query_vec = verifier.get_embedding(query_image)
+def check_verifier(query_image_path: str):
+    query_vec = verifier.get_embedding(query_image_path)
 
-    # ⚠️ Placeholder until FAISS is integrated
-    # Later: search(query_vec) → get best match + similarity
+    results = indexer.search(query_vec, k=1)
 
-    return False, None, None
+    if len(results) == 0:
+        return False, None, None
+
+    best = results[0]
+    #print("Top match:", best)
+    return True, best["filename"], best["score"]
 
 
 # -------------------------
@@ -61,7 +70,7 @@ def check_verifier(query_image: Image.Image):
 # -------------------------
 
 def detect_duplicate(image_path: str):
-    query_image = Image.open(image_path)
+    query_image = Image.open(image_path).convert("RGB")
 
     # Stage 1: Sieve
     is_dup, match, dist = check_sieve(query_image)
@@ -74,7 +83,7 @@ def detect_duplicate(image_path: str):
         }
 
     # Stage 2: Verifier
-    is_dup, match, sim = check_verifier(query_image)
+    is_dup, match, sim = check_verifier(image_path)
 
     if is_dup and sim >= SSCD_SIM_THRESHOLD:
         return {
@@ -94,11 +103,10 @@ def detect_duplicate(image_path: str):
 # -------------------------
 
 if __name__ == "__main__":
-    # Build hash DB from originals
+    # Build hash DB from original images
     build_hash_db("data/raw/copydays/original")
 
-    # Test with a strong attack image
-    test_image = "data/raw/copydays/strong/200000_1.png"
+    test_image = "data/raw/copydays/strong/214402.jpg"
 
     result = detect_duplicate(test_image)
     print(result)
