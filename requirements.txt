@@ -8,3 +8,6 @@ pillow
 imagehash
 numpy
 torch
+torchvision
+streamlit>=1.28.0
+faiss-cpu>=1.7.4
