@@ -8,3 +8,4 @@ pillow
 imagehash
 numpy
 torch
+faiss-cpu
