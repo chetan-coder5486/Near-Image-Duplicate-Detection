@@ -9,4 +9,4 @@ IMAGE_DIR = "data/data/raw/copydays/original"
 UPLOAD_DIR = "data/uploads"
 
 # UI / search settings
-TOP_K = 3
+TOP_K = 10
