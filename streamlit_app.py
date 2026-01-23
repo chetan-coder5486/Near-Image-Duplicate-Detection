@@ -62,17 +62,19 @@ with col2:
         
         if result["is_duplicate"]:
             st.markdown("### 🚨 Duplicates Found")
+        elif result.get("verifier_matches"):
+            st.markdown("### 🔍 Similar Images Found")
         else:
-            st.markdown("### ✅ Similar Images")
+            st.markdown("### ✅ No Duplicates Found")
+            st.info("This image appears to be unique - no similar images found in the database.")
         
         if result.get("verifier_matches"):
-    # Filter valid images first
-         valid_matches = [m for m in result["verifier_matches"] if Path(m["filename"]).exists()]
+            valid_matches = [m for m in result["verifier_matches"] if Path(m["filename"]).exists()]
     
-         if valid_matches:
-            cols = st.columns(len(valid_matches))
-            for col, match in zip(cols, valid_matches):
-                with col:
-                    img = Image.open(match["filename"])
-                    st.image(img, width="stretch")
-                    st.caption(f"{match['score']:.3f}")
+            if valid_matches:
+                cols = st.columns(len(valid_matches))
+                for col, match in zip(cols, valid_matches):
+                    with col:
+                        img = Image.open(match["filename"])
+                        st.image(img, width="stretch")
+                        st.caption(f"Score: {match['score']:.3f}")

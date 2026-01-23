@@ -93,14 +93,17 @@ class DuplicateDetector:
             }
 
         verifier_matches = self.verify(image_path, top_k=top_k)
-        best = verifier_matches[0] if verifier_matches else None
-        is_duplicate = bool(best and best.get("score", 0.0) >= SSCD_SIM_THRESHOLD)
+        
+        # Filter matches that meet the similarity threshold
+        valid_matches = [m for m in verifier_matches if m.get("score", 0.0) >= SSCD_SIM_THRESHOLD]
+        best = valid_matches[0] if valid_matches else None
+        is_duplicate = bool(best)
 
         return {
             "is_duplicate": is_duplicate,
-            "stage": "verifier" if verifier_matches else "unique",
+            "stage": "verifier" if valid_matches else "unique",
             "match": best.get("filename") if best else None,
             "score": best.get("score") if best else None,
             "sieve_matches": sieve_matches,
-            "verifier_matches": verifier_matches,
+            "verifier_matches": valid_matches,  # Only return matches above threshold
         }
