@@ -82,3 +82,21 @@ class Indexer:
         with open(self.metadata_path, "rb") as f:
             self.metadata = pickle.load(f)
         print(f"Loaded {len(self.metadata)} records.")
+
+    def reset(self):
+        """Reset the index to empty state"""
+        self.index = faiss.IndexFlatIP(self.dimension)
+        self.metadata = []
+        print("🔄 Index reset.")
+
+    def add(self, filename: str, vector: np.ndarray):
+        """
+        Add a single vector to the index.
+        Args:
+            filename: image filename
+            vector: (512,) float32, normalized
+        """
+        if vector.ndim == 1:
+            vector = vector.reshape(1, -1)
+        self.index.add(vector.astype("float32"))
+        self.metadata.append(filename)

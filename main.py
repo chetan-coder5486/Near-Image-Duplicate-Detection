@@ -106,7 +106,7 @@ if __name__ == "__main__":
     # Build hash DB from original images
     build_hash_db("data/raw/copydays/original")
 
-    test_image = "data/raw/copydays/strong/214402.jpg"
+    test_image = "data/raw/copydays/strong/214401.jpg"
 
     result = detect_duplicate(test_image)
     print(result)

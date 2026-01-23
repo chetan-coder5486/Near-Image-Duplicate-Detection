@@ -1,6 +1,7 @@
 from PIL import Image
 import imagehash
 from typing import Dict, List, Tuple
+from src.config import HASH_HAMMING_THRESHOLD
 
 def compute_dhash(image: Image.Image, hash_size: int = 8) -> str:
     """
@@ -42,7 +43,7 @@ def hamming_distance(hash1: str, hash2: str) -> int:
 def find_near_duplicates(
     query_hash: str,
     hash_db: Dict[str, str],
-    max_distance: int = 3
+    max_distance: int = HASH_HAMMING_THRESHOLD
 ) -> List[Tuple[str, int]]:
     """
     Find near-duplicate images using Hamming distance.
@@ -50,7 +51,7 @@ def find_near_duplicates(
     Args:
         query_hash (str): dHash of query image
         hash_db (dict): {image_id: dHash}
-        max_distance (int): Allowed Hamming distance
+        max_distance (int): Allowed Hamming distance (default from config)
 
     Returns:
         list: [(image_id, distance), ...]
@@ -69,7 +70,7 @@ def find_near_duplicates(
 def is_duplicate(
     image: Image.Image,
     hash_db: Dict[str, str],
-    threshold: int = 3
+    threshold: int = HASH_HAMMING_THRESHOLD
 ) -> Tuple[bool, List[Tuple[str, int]]]:
     """
     Full Sieve check: image -> hash -> compare -> decision.
@@ -77,7 +78,7 @@ def is_duplicate(
     Args:
         image (PIL.Image): Query image
         hash_db (dict): Stored hashes
-        threshold (int): Hamming distance threshold
+        threshold (int): Hamming distance threshold (default from config)
 
     Returns:
         (bool, list): (is_duplicate, matches)

@@ -9,3 +9,4 @@ imagehash
 numpy
 torch
 faiss-cpu
+torchvision
