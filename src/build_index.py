@@ -1,17 +1,17 @@
 import os
+import sys
+from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 
+# Ensure project root is on sys.path for module imports
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from src.verifier import SSCDVerifier
 from src.indexer import Indexer
-from src.config import SSCD_MODEL_PATH
-
-
-# -------------------------
-# Config
-# -------------------------
-
-IMAGE_DIR = "data/raw/copydays/original"
+from src.config import SSCD_MODEL_PATH, IMAGE_DIR
 
 
 # -------------------------
@@ -19,6 +19,7 @@ IMAGE_DIR = "data/raw/copydays/original"
 # -------------------------
 
 def build_index():
+    print(f"[INFO] IMAGE_DIR: {IMAGE_DIR}")
     print("[INFO] Loading SSCD model...")
     verifier = SSCDVerifier(SSCD_MODEL_PATH)
 

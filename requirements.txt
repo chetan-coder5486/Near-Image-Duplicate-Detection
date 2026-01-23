@@ -8,4 +8,7 @@ pillow
 imagehash
 numpy
 torch
+torchvision
 faiss-cpu
+streamlit
+pillow
