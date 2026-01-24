@@ -61,6 +61,7 @@ Near-Image-Duplicate-Detection/
 ## Installation
 
 ### Prerequisites
+
 - Python 3.8+
 - ~2GB disk space for model and sample data
 
@@ -104,6 +105,7 @@ streamlit run streamlit_app.py
 ```
 
 Open the browser link, upload an image, and view:
+
 - Top-K similar matches with similarity scores
 - Duplicate/not-duplicate classification
 - Visual comparison of query vs matches
@@ -234,11 +236,11 @@ python scripts/evaluate_with_distractors.py
 
 ### FastAPI Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/` | GET | Web interface |
-| `/api/detect` | POST | Upload image, get duplicate detection results |
-| `/preview?path=...` | GET | Preview an image by path |
+| Endpoint            | Method | Description                                   |
+| ------------------- | ------ | --------------------------------------------- |
+| `/`                 | GET    | Web interface                                 |
+| `/api/detect`       | POST   | Upload image, get duplicate detection results |
+| `/preview?path=...` | GET    | Preview an image by path                      |
 
 ### Python API
 
@@ -286,11 +288,11 @@ pytest tests/test_sieve.py -v
 
 ## Performance
 
-| Stage | Time per Image | Purpose |
-|-------|---------------|---------|
-| dHash | ~1ms | Fast filtering |
-| SSCD Embedding | ~50ms (CPU) | Feature extraction |
-| FAISS Search | ~1ms | Similarity lookup |
+| Stage          | Time per Image | Purpose            |
+| -------------- | -------------- | ------------------ |
+| dHash          | ~1ms           | Fast filtering     |
+| SSCD Embedding | ~50ms (CPU)    | Feature extraction |
+| FAISS Search   | ~1ms           | Similarity lookup  |
 
 Typical end-to-end latency: **50-100ms** per query on CPU.
 
