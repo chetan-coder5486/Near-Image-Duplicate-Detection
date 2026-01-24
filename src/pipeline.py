@@ -52,14 +52,20 @@ class DuplicateDetector:
         self.indexer = indexer or Indexer()
         self.hash_db = hash_db if hash_db is not None else build_hash_db(image_dir)
 
-    def sieve(self, query_image: Image.Image, max_matches: int = 3) -> List[Dict]:
+    def sieve(self, query_image: Image.Image, query_path: str = None, max_matches: int = 3) -> List[Dict]:
         """
         Run the dHash sieve and return near-duplicate hits sorted by distance.
+        Filters out self-matches if query_path is provided.
         """
         matches: List[Dict] = []
         q_hash = compute_dhash(query_image)
+        query_resolved = str(Path(query_path).resolve()) if query_path else None
 
         for db_hash, img_path in self.hash_db.items():
+            # Skip self-matches
+            if query_resolved and Path(img_path).resolve() == Path(query_resolved).resolve():
+                continue
+                
             dist = hamming_distance(q_hash, db_hash)
             if dist <= HASH_HAMMING_THRESHOLD:
                 matches.append({"filename": img_path, "distance": dist})
@@ -70,9 +76,18 @@ class DuplicateDetector:
     def verify(self, image_path: str, top_k: int = 3) -> List[Dict]:
         """
         Run SSCD + FAISS search for the given image and return top-k results.
+        Filters out self-matches.
         """
         query_vec = self.verifier.get_embedding(image_path)
-        return self.indexer.search(query_vec, k=top_k)
+        query_path = str(Path(image_path).resolve())
+        
+        # Get more results to account for filtering
+        results = self.indexer.search(query_vec, k=top_k + 5)
+        
+        # Filter out self-matches (same file path)
+        filtered = [r for r in results if Path(r["filename"]).resolve() != Path(query_path).resolve()]
+        
+        return filtered[:top_k]
 
     def detect(self, image_path: str, top_k: int = 3) -> Dict:
         """
@@ -80,7 +95,7 @@ class DuplicateDetector:
         """
         query_image = Image.open(image_path).convert("RGB")
 
-        sieve_matches = self.sieve(query_image, max_matches=top_k)
+        sieve_matches = self.sieve(query_image, query_path=image_path, max_matches=top_k)
         if sieve_matches:
             best = sieve_matches[0]
             return {
